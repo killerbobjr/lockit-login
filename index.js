@@ -164,6 +164,27 @@ Login.prototype.postLogin = function(req, res, next) {
       return;
     }
 
+	console.log('invalid account check');
+	
+    // check for invalidated account
+    if (user.accountInvalid) {
+      error = 'The account is invalid';
+
+      // send only JSON when REST is active
+      if (config.rest) return res.json(403, {error: error});
+
+      // render view
+      res.status(403);
+      res.render(view, {
+        title: 'Login',
+        action: that.loginRoute + suffix,
+        error: error,
+        login: login,
+        basedir: req.app.get('views')
+      });
+      return;
+    }
+
     // check for too many failed login attempts
     if (user.accountLocked && new Date(user.accountLockedUntil) > new Date()) {
       error = 'The account is temporarily locked';
