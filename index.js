@@ -164,7 +164,7 @@ Login.prototype.postLogin = function(req, res, next) {
       return;
     }
 
-	console.log('invalid account check');
+//	console.log('invalid account check');
 	
     // check for invalidated account
     if (user.accountInvalid) {
