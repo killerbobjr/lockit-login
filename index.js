@@ -83,11 +83,12 @@ Login.prototype.getLogin = function(req, res, next) {
   var view = config.login.views.login || join('get-login');
 
   // render view
-  res.render(view, {
-    title: 'Login',
-    action: that.loginRoute + suffix,
-    basedir: req.app.get('views')
-  });
+  var locals = req.session.locals || res.locals;
+  locals.title = 'Login';
+  locals.action = that.loginRoute + suffix;
+  locals.basedir = req.app.get('views');
+  req.session.locals = undefined;
+  res.render(view, locals);
 };
 
 
