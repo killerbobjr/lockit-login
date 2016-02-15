@@ -291,7 +291,7 @@ Login.prototype.postLogin = function(req, res, next) {
           req.session.loggedIn = true;
 
           // emit 'login' event
-          that.emit('login', user, res, target);
+          that.emit('login', user, res, req);
 
           // let lockit handle the response
           if (config.login.handleResponse) {
@@ -378,7 +378,7 @@ Login.prototype.postTwoFactor = function(req, res, next) {
     req.session.loggedIn = true;
 
     // emit 'login' event
-    that.emit('login', user, res, target);
+    that.emit('login', user, res, req);
 
     // let lockit handle the response
     if (config.login.handleResponse) {
@@ -420,7 +420,7 @@ Login.prototype.getLogout = function(req, res, next) {
     res.locals.email = null;
 
     // emit 'logout' event
-    that.emit('logout', user, res);
+    that.emit('logout', user, res, req);
 
     // let lockit handle the response
     if (config.login.handleResponse) {
