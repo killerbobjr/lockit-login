@@ -37,12 +37,12 @@ var Login = module.exports = function(config, adapter) {
 
   // set default routes
   this.loginRoute = config.login.route || '/login';
-  var logoutRoute = config.login.logoutRoute || '/logout';
+  this.logoutRoute = config.login.logoutRoute || '/logout';
 
   // change URLs if REST is active
   if (config.rest) {
     this.loginRoute = '/rest' + this.loginRoute;
-    logoutRoute = '/rest' + logoutRoute;
+    this.logoutRoute = '/rest' + this.logoutRoute;
   }
 
   // two-factor authentication route
@@ -52,7 +52,7 @@ var Login = module.exports = function(config, adapter) {
   router.get(this.loginRoute, this.getLogin.bind(this));
   router.post(this.loginRoute, this.postLogin.bind(this));
   router.post(this.twoFactorRoute, this.postTwoFactor.bind(this));
-  router.get(logoutRoute, utils.restrict(config), this.getLogout.bind(this));
+  router.get(this.logoutRoute, utils.restrict(config), this.getLogout.bind(this));
   this.router = router;
 
 };
@@ -83,11 +83,11 @@ Login.prototype.getLogin = function(req, res, next) {
   var view = config.login.views.login || join('get-login');
 
   // render view
-  var locals = req.session.locals || res.locals;
+  var locals = req.locals || res.locals;
   locals.title = 'Login';
   locals.action = that.loginRoute + suffix;
   locals.basedir = req.app.get('views');
-  req.session.locals = undefined;
+  req.locals = undefined;
   res.render(view, locals);
 };
 
@@ -268,8 +268,12 @@ Login.prototype.postLogin = function(req, res, next) {
       user.currentLoginTime = now;
       user.currentLoginIp = req.ip;
 
+      // user is now logged in
+      user.loggedIn = true;
+	  
       // set failed login attempts to zero but save them in the session
-      req.session.failedLoginAttempts = user.failedLoginAttempts;
+	  req.user = JSON.parse(JSON.stringify(user));
+      //req.user.failedLoginAttempts = user.failedLoginAttempts;
       user.failedLoginAttempts = 0;
       user.accountLocked = false;
 
@@ -277,18 +281,11 @@ Login.prototype.postLogin = function(req, res, next) {
       adapter.update(user, function(err, user) {
         if (err) return next(err);
 
-        // create session and save the name and email address
-        req.session.name = user.name;
-        req.session.email = user.email;
-
         // check if two-factor authentication is enabled
         if (!user.twoFactorEnabled) {
 
           // get redirect url
           var target = req.query.redirect || '/';
-
-          // user is now logged in
-          req.session.loggedIn = true;
 
           // emit 'login' event
           that.emit('login', user, res, req);
@@ -348,7 +345,7 @@ Login.prototype.postTwoFactor = function(req, res, next) {
   var that = this;
 
   var token = req.body.token || '';
-  var email = req.session.email || '';
+  var email = req.user?req.user.email || '':'';
 
   // get redirect url
   var target = req.query.redirect || '/';
@@ -375,7 +372,7 @@ Login.prototype.postTwoFactor = function(req, res, next) {
     // token seems to be fine
 
     // user is now logged in
-    req.session.loggedIn = true;
+    req.user.loggedIn = true;
 
     // emit 'login' event
     that.emit('login', user, res, req);
@@ -407,37 +404,34 @@ Login.prototype.getLogout = function(req, res, next) {
   var config = this.config;
   var that = this;
 
-  // save values for event emitter
-  var user = {
-    name: req.session.name,
-    email: req.session.email
-  };
+	  // save values for event emitter
+	  var user = JSON.parse(JSON.stringify(req.user));
 
-  // destroy the session
-  utils.destroy(req, function() {
-    // clear local variables - they were set before the session was destroyed
-    res.locals.name = null;
-    res.locals.email = null;
+	  // destroy the session
+	  utils.destroy(req, function() {
+		// clear local variables - they were set before the session was destroyed
+		res.locals.name = null;
+		res.locals.email = null;
 
-    // emit 'logout' event
-    that.emit('logout', user, res, req);
+		// emit 'logout' event
+		that.emit('logout', user, res, req);
 
-    // let lockit handle the response
-    if (config.login.handleResponse) {
+		// let lockit handle the response
+		if (config.login.handleResponse) {
 
-      // send JSON when REST is active
-      if (config.rest) return res.send(204);
+		  // send JSON when REST is active
+		  if (config.rest) return res.send(204);
 
-      // custom or built-in view
-      var view = config.login.views.loggedOut || join('get-logout');
+		  // custom or built-in view
+		  var view = config.login.views.loggedOut || join('get-logout');
 
-      // reder logout success template
-      res.render(view, {
-        title: 'Logout successful',
-        basedir: req.app.get('views')
-      });
+		  // reder logout success template
+		  res.render(view, {
+			title: 'Logout successful',
+			basedir: req.app.get('views')
+		  });
 
-    }
-  });
+		}
+	  });
 
 };
