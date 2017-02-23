@@ -25,7 +25,7 @@
     "ms": "^0.6.2",
     "moment": "^2.8.1",
     "couch-pwd": "0.0.1",
-    "lockit-utils": "git://github.com/killerbobjr/lockit-utils.git",
+    "lockit-utils": "git://github.com/killerbobjr/lockit-utilities.git",
   },
   "devDependencies": {
     "grunt": "^0.4.2",
