@@ -24,7 +24,7 @@
   "dependencies": {
     "ms": "^1.0.0",
     "moment": "^2.18.1",
-    "couch-pwd": "0.0.1",
+    "couch-pwd": "git://github.com/zemirco/couch-pwd.git",
     "lockit-utils": "git://github.com/killerbobjr/lockit-utilities.git"
   },
   "devDependencies": {
