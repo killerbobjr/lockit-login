@@ -122,7 +122,7 @@ Login.prototype.postLogin = function(req, res, next) {
     error = 'Please enter your email/username and password';
 
     // send only JSON when REST is active
-    if (config.rest) return res.json(403, {error: error});
+    if (config.login.rest) return res.json({error: error});
 
     // render view
     res.status(403);
@@ -151,7 +151,7 @@ Login.prototype.postLogin = function(req, res, next) {
       error = 'Invalid user or password';
 
       // send only JSON when REST is active
-      if (config.rest) return res.json(403, {error: error});
+      if (config.login.rest) return res.json({error: error});
 
       // render view
       res.status(403);
@@ -165,14 +165,12 @@ Login.prototype.postLogin = function(req, res, next) {
       return;
     }
 
-//	console.log('invalid account check');
-	
     // check for invalidated account
     if (user.accountInvalid) {
       error = 'The account is invalid';
 
       // send only JSON when REST is active
-      if (config.rest) return res.json(403, {error: error});
+      if (config.login.rest) return res.json({error: error});
 
       // render view
       res.status(403);
@@ -191,7 +189,7 @@ Login.prototype.postLogin = function(req, res, next) {
       error = 'The account is temporarily locked';
 
       // send only JSON when REST is active
-      if (config.rest) return res.json(403, {error: error});
+      if (config.login.rest) return res.json({error: error});
 
       // render view
       res.status(403);
@@ -238,7 +236,7 @@ Login.prototype.postLogin = function(req, res, next) {
           if (err) return next(err);
 
           // send only JSON when REST is active
-          if (config.rest) return res.json(403, {error: errorMessage});
+          if (config.login.rest) return res.json({error: errorMessage});
 
           // send error message
           res.status(403);
