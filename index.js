@@ -7,6 +7,7 @@ var ms = require('ms');
 var moment = require('moment');
 var utils = require('lockit-utils');
 var pwd = require('couch-pwd');
+var debug = require('debug')('lockit');
 
 /**
  * Internal helper functions
@@ -142,7 +143,15 @@ Login.prototype.postLogin = function(req, res, next) {
   var EMAIL_REGEXP = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
   var query = EMAIL_REGEXP.test(login) ? 'email' : 'name';
 
+	// Custom for our app
+	var	basequery = {};
+	if(res.locals && res.locals.basequery)
+	{
+		basequery = res.locals.basequery;
+	}
+
   // find user in db
+  debug('postLogin - query', query, 'login', login, 'basequery', basequery);
   adapter.find(query, login, function(err, user) {
     if (err) return next(err);
 
@@ -320,7 +329,7 @@ Login.prototype.postLogin = function(req, res, next) {
 
     });
 
-  });
+  }, basequery);
 
 };
 
@@ -347,6 +356,13 @@ Login.prototype.postTwoFactor = function(req, res, next) {
 
   // get redirect url
   var target = req.query.redirect || '/';
+
+	// Custom for our app
+	var	basequery = {};
+	if(res.locals && res.locals.basequery)
+	{
+		basequery = res.locals.basequery;
+	}
 
   // get user from db
   adapter.find('email', email, function(err, user) {
@@ -384,7 +400,7 @@ Login.prototype.postTwoFactor = function(req, res, next) {
       res.redirect(target);
     }
 
-  });
+  }, basequery);
 
 };
 

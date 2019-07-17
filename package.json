@@ -22,6 +22,8 @@
     "logout"
   ],
   "dependencies": {
+    "debug": "^4.1.1",
+    "express": "^4.16.4",
     "ms": "^1.0.0",
     "moment": "^2.18.1",
     "couch-pwd": "git://github.com/zemirco/couch-pwd.git",
