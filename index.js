@@ -23,33 +23,26 @@ var Login = module.exports = function(cfg, adapter)
 		return new Login(config, adapter);
 	}
 
-	this.config = cfg.login;
-	this.config.failedLoginAttempts = cfg.failedLoginAttempts;
-	this.config.accountLockedTime = cfg.accountLockedTime;
-	this.config.failedLoginsWarning = cfg.failedLoginsWarning;
-	this.config.mail = cfg;
-	this.config.signup = cfg.signup;
-	this.config.rerouted = cfg.rerouted;
+	this.config = cfg;
 	this.adapter = adapter;
-
 	var	config = this.config;
 
 	// call super constructor function
 	events.EventEmitter.call(this);
 
 	// set default routes
-	this.loginRoute = config.route || '/login';
-	this.logoutRoute = config.logoutRoute || '/logout';
+	this.loginRoute = config.login.route || '/login';
+	this.logoutRoute = config.login.logoutRoute || '/logout';
 
 	// change URLs if REST is active
 	if (config.rest)
 	{
-		this.loginRoute = '/' + config.rest + this.loginRoute;
-		this.logoutRoute = '/' + config.rest + this.logoutRoute;
+		this.loginRoute = '/' + config.rest.route + this.loginRoute;
+		this.logoutRoute = '/' + config.rest.route + this.logoutRoute;
 	}
 
 	// two-factor authentication route
-	this.twoFactorRoute = this.loginRoute + (config.twoFactorRoute || '/twofactor');
+	this.twoFactorRoute = this.loginRoute + (config.login.twoFactorRoute || '/twofactor');
 
 	var router = express.Router();
 	router.get(this.loginRoute, this.getLogin.bind(this));
@@ -77,9 +70,9 @@ Login.prototype.sendResponse = function(err, view, user, json, redirect, req, re
 {
 	var	config = this.config;
 
-	this.emit((config.eventmsg || config.route), err, view, user, res);
+	this.emit((config.login.eventMessage || 'Login'), err, view, user, res);
 	
-	if(config.handleResponse)
+	if(config.login.handleResponse)
 	{
 		// do not handle the route when REST is active
 		if(config.rest)
@@ -88,10 +81,10 @@ Login.prototype.sendResponse = function(err, view, user, json, redirect, req, re
 			{
 				res.status(403).json(err);
 			}
-			else if(config.rerouted)
+			else if(config.login.rerouted)
 			{
-				config.rerouted = undefined;
-				if(config.signup.rest)
+				config.login.rerouted = undefined;
+				if(config.rest)
 				{
 					res.json(json);
 				}
@@ -109,7 +102,7 @@ Login.prototype.sendResponse = function(err, view, user, json, redirect, req, re
 		{
 			// custom or built-in view
 			var	resp = {
-					title: config.title || 'Login',
+					title: config.login.title || 'Login',
 					basedir: req.app.get('views')
 				};
 				
@@ -158,7 +151,7 @@ Login.prototype.getLogin = function(req, res, next)
 		// save redirect url
 		suffix = req.query.redirect ? '?redirect=' + encodeURIComponent(req.query.redirect) : '';
 	
-	this.sendResponse(undefined, config.views.login, undefined, {action:this.loginRoute + suffix, result:true}, undefined, req, res, next);
+	this.sendResponse(undefined, config.login.views.login, undefined, {action:this.loginRoute + suffix, result:true}, undefined, req, res, next);
 };
 
 
@@ -175,14 +168,14 @@ Login.prototype.postLogin = function(req, res, next)
 	var	adapter = this.adapter,
 		config = this.config,
 		that = this,
-		login = req.body.login,
+		login = req.body.name,
 		password = req.body.password,
 		suffix = req.query.redirect ? '?redirect=' + encodeURIComponent(req.query.redirect) : '';
 
 	// check for valid inputs
 	if (!login || !password)
 	{
-		that.sendResponse({message:'Please enter your email/username and password'}, config.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
+		that.sendResponse({message:'Please enter your email/username and password'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
 	}
 	else
 	{
@@ -208,18 +201,18 @@ Login.prototype.postLogin = function(req, res, next)
 				}
 				else if (!user)
 				{
-					that.sendResponse({message:'Invalid user or password'}, config.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
+					that.sendResponse({message:'Invalid user or password'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
 				}
 				else
 				{
 					// check for invalidated account
 					if (user.accountInvalid)
 					{
-						that.sendResponse({message:'The account is invalid'}, config.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
+						that.sendResponse({message:'The account is invalid'}, config.login.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
 					}
 					else if (user.accountLocked && new Date(user.accountLockedUntil) > new Date())
 					{
-						that.sendResponse({message:'The account is temporarily locked'}, config.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
+						that.sendResponse({message:'The account is temporarily locked'}, config.login.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
 					}
 					else
 					{
@@ -272,15 +265,15 @@ Login.prototype.postLogin = function(req, res, next)
 												}
 												else
 												{
-													that.sendResponse({message:errorMessage}, config.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
+													that.sendResponse({message:errorMessage}, config.login.views.login, user, {login:login,password:password,action:that.loginRoute + suffix, result:true}, undefined, req, res, next);
 												}
 											});
 									}
-									else if(user.twoFactorEnabled && config.views.twoFactor && user.email.length && EMAIL_REGEXP.test(user.email))
+									else if(user.twoFactorEnabled && config.login.views.twoFactor && user.email.length && EMAIL_REGEXP.test(user.email))
 									{
 										// Two-factor has been enabled
 										// send email with change email link
-										var	mail = new Mail(Object.assign(config.mail, that)),
+										var	mail = new Mail(config),
 											emailto,
 											usr = JSON.parse(JSON.stringify(user));
 
@@ -289,11 +282,11 @@ Login.prototype.postLogin = function(req, res, next)
 											{
 												if(err)
 												{
-													next(err);
+													that.sendResponse(err, config.login.views.route, user, {result:true}, req, res, next);
 												}
 												else
 												{
-													that.sendResponse(undefined, config.views.twoFactor, usr, {email:user.email,result:true}, undefined, req, res, next);
+													that.sendResponse(undefined, config.login.views.twoFactor, usr, {email:user.email,result:true}, undefined, req, res, next);
 												}
 											});
 									}
@@ -331,7 +324,31 @@ Login.prototype.postLogin = function(req, res, next)
 												}
 												else
 												{
-													that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || config.completionRoute, req, res, next);
+													if(config.login.completionRoute)
+													{
+														if(typeof config.login.completionRoute === 'function')
+														{
+															config.login.completionRoute(user, req, res, function(err, req, res)
+																{
+																	if(err)
+																	{
+																		next(err);
+																	}
+																	else
+																	{
+																		that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || '/', req, res, next);
+																	}
+																});
+														}
+														else
+														{
+															that.sendResponse(undefined, undefined, user, {result:true}, config.login.completionRoute, req, res, next);
+														}
+													}
+													else
+													{
+														that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || '/', req, res, next);
+													}
 												}
 											});
 									}
@@ -382,7 +399,31 @@ Login.prototype.postTwoFactor = function(req, res, next)
 			{
 				if(utils.verify(token, user.salt))
 				{
-					that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || config.completionRoute, req, res, next);
+					if(config.login.completionRoute)
+					{
+						if(typeof config.login.completionRoute === 'function')
+						{
+							config.login.completionRoute(user, req, res, function(err, req, res)
+								{
+									if(err)
+									{
+										next(err);
+									}
+									else
+									{
+										that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || '/', req, res, next);
+									}
+								});
+						}
+						else
+						{
+							that.sendResponse(undefined, undefined, user, {result:true}, config.login.completionRoute, req, res, next);
+						}
+					}
+					else
+					{
+						that.sendResponse(undefined, undefined, user, {result:true}, req.query.redirect || '/', req, res, next);
+					}
 				}
 				else
 				{
@@ -457,7 +498,7 @@ Login.prototype.getLogout = function(req, res, next)
 							// destroy the session
 							utils.destroy(req, function()
 								{
-									that.sendResponse(undefined, config.views.loggedOut, user, {title:config.title || 'Logged Out',result:true}, undefined, req, res, next);			
+									that.sendResponse(undefined, config.login.views.loggedOut, user, {title:config.login.title || 'Logged Out',result:true}, undefined, req, res, next);			
 								});
 						}
 					});
