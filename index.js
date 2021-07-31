@@ -42,9 +42,9 @@ var Login = module.exports = function(cfg, adapter)
 	// change URLs if REST is active
 	if (config.rest)
 	{
-		this.loginRoute = '/' + config.rest.route + this.loginRoute;
-		this.twoFactorRoute = '/' + config.rest.route + this.twoFactorRoute;
-		this.logoutRoute = '/' + config.rest.route + this.logoutRoute;
+		this.loginRoute = config.rest.route + this.loginRoute;
+		this.twoFactorRoute = config.rest.route + this.twoFactorRoute;
+		this.logoutRoute = config.rest.route + this.logoutRoute;
 	}
 
 	var router = express.Router();
@@ -202,7 +202,7 @@ Login.prototype.postLogin = function(req, res, next)
 				}
 				else if (!user)
 				{
-					that.sendResponse({message:'The user '+ query +' <b>' + login + '</b> has not been signed up'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
+					that.sendResponse({message:'<b>' + login + '</b> is not a valid account'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
 				}
 				else
 				{
@@ -235,7 +235,7 @@ Login.prototype.postLogin = function(req, res, next)
 									if (hash !== user.derived_key)
 									{
 										// set the default error message
-										var	errorMessage = 'Invalid password',
+										var	errorMessage = config.login.errorMessage !== undefined ? config.login.errorMessage : 'Invalid password',
 											warningflag,
 											redirectflag;
 
