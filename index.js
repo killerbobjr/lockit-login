@@ -497,7 +497,7 @@ Login.prototype.postTwoFactor = function(req, res, next)
 							
 							suffix += 'error=' + encodeURIComponent('The authorization code is invalid');
 							
-							that.sendResponse(undefined, undefined, undefined, {title:config.login.title || this.title,completed:true,view:that.logout}, config.login.route + suffix, req, res, next);			
+							that.sendResponse(undefined, undefined, undefined, {title:config.login.title || that.title,completed:true,view:that.logout}, config.login.route + suffix, req, res, next);			
 						});
 				}
 			}
@@ -530,6 +530,8 @@ Login.prototype.getLogout = function(req, res, next)
 		basequery = res.locals.basequery;
 	}
 
+	debug('getLogout');
+
 	adapter.find('name', user.name, function(err, user)
 		{
 			if (err)
@@ -552,14 +554,14 @@ Login.prototype.getLogout = function(req, res, next)
 							// destroy the session
 							utils.destroy(req, function()
 								{
-									that.sendResponse(undefined, config.login.views.loggedOut, user, {title:config.login.title || this.title,userupdated:true,completed:true,view:that.logout}, undefined, req, res, next);			
+									that.sendResponse(undefined, config.login.views.loggedOut, user, {title:config.login.titleLogout || that.titleLogout,userupdated:true,completed:true,view:that.logout}, undefined, req, res, next);			
 								});
 						}
 					});
 			}
 			else
 			{
-				next();
+				res.redirect(that.loginRoute);
 			}
 		}, basequery);
 };
