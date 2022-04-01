@@ -26,8 +26,8 @@
     "express": "^4.16.4",
     "ms": "^2.1.2",
     "moment": "^2.24.0",
-    "couch-pwd": "git://github.com/zemirco/couch-pwd.git",
-    "lockit-utils": "git://github.com/killerbobjr/lockit-utilities.git"
+    "couch-pwd": "https://github.com/zemirco/couch-pwd.git",
+    "lockit-utils": "https://github.com/killerbobjr/lockit-utilities.git"
   },
   "devDependencies": {
     "grunt": "^1.0.4",
@@ -43,7 +43,7 @@
     "express-session": "^1.16.2",
     "notp": "^2.0.3",
     "supertest": "^4.0.2",
-    "lockit-couchdb-adapter": "git://github.com/killerbobjr/lockit-couchdb-adapter.git",
+    "lockit-couchdb-adapter": "https://github.com/killerbobjr/lockit-couchdb-adapter.git",
     "pug": "^2.0.4",
     "static-favicon": "^2.0.0-alpha",
     "should": "^13.2.3",
