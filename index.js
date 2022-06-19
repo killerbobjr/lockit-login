@@ -532,36 +532,43 @@ Login.prototype.getLogout = function(req, res, next)
 
 	debug('getLogout');
 
-	adapter.find('name', user.name, function(err, user)
-		{
-			if (err)
+	if(user)
+	{
+		adapter.find('name', user.name, function(err, user)
 			{
-				next(err);
-			}
-			else if(user)
-			{
-				user.loggedIn = false;
-				adapter.update(user, function(err, user)
-					{
-						if (err)
+				if (err)
+				{
+					next(err);
+				}
+				else if(user)
+				{
+					user.loggedIn = false;
+					adapter.update(user, function(err, user)
 						{
-							next(err);
-						}
-						else
-						{
-							res.locals.user = undefined;
+							if (err)
+							{
+								next(err);
+							}
+							else
+							{
+								res.locals.user = undefined;
 
-							// destroy the session
-							utils.destroy(req, function()
-								{
-									that.sendResponse(undefined, config.login.views.loggedOut, user, {title:config.login.titleLogout || that.titleLogout,userupdated:true,completed:true,view:that.logout}, undefined, req, res, next);			
-								});
-						}
-					});
-			}
-			else
-			{
-				res.redirect(that.loginRoute);
-			}
-		}, basequery);
+								// destroy the session
+								utils.destroy(req, function()
+									{
+										that.sendResponse(undefined, config.login.views.loggedOut, user, {title:config.login.titleLogout || that.titleLogout,userupdated:true,completed:true,view:that.logout}, undefined, req, res, next);			
+									});
+							}
+						});
+				}
+				else
+				{
+					res.redirect(that.loginRoute);
+				}
+			}, basequery);
+	}
+	else
+	{
+		res.redirect(that.loginRoute);
+	}
 };
