@@ -194,7 +194,7 @@ Login.prototype.postLogin = function(req, res, next)
 		}
 
 		// find user in db
-		adapter.find(query, login, function(err, user)
+		adapter.find(query, login, basequery, function(err, user)
 			{
 				if (err)
 				{
@@ -374,7 +374,7 @@ Login.prototype.postLogin = function(req, res, next)
 							});
 					}
 				}
-			}, basequery);
+			});
 	}
 };
 
@@ -409,7 +409,7 @@ Login.prototype.postTwoFactor = function(req, res, next)
 	}
 
 	// get user from db
-	adapter.find(query, name, function(err, user)
+	adapter.find(query, name, basequery, function(err, user)
 		{
 			if(err)
 			{
@@ -505,7 +505,7 @@ Login.prototype.postTwoFactor = function(req, res, next)
 			{
 				next();
 			}
-		}, basequery);
+		});
 };
 
 
@@ -534,7 +534,7 @@ Login.prototype.getLogout = function(req, res, next)
 
 	if(user)
 	{
-		adapter.find('name', user.name, function(err, user)
+		adapter.find('name', user.name, basequery, function(err, user)
 			{
 				if (err)
 				{
@@ -565,7 +565,7 @@ Login.prototype.getLogout = function(req, res, next)
 				{
 					res.redirect(that.loginRoute);
 				}
-			}, basequery);
+			});
 	}
 	else
 	{
