@@ -260,7 +260,6 @@ Login.prototype.postLogin = function(req, res, next)
 											// show a warning after 3 (default setting) failed login attempts
 											errorMessage = 'Invalid password. Your account will be locked soon.';
 											warningflag = true;
-											redirectflag = that.loginRoute;
 										}
 
 										// save user to db
