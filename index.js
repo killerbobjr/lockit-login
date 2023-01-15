@@ -202,7 +202,14 @@ Login.prototype.postLogin = function(req, res, next)
 				}
 				else if (!user)
 				{
-					that.sendResponse({message:'<b>' + login + '</b> is not a valid account'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
+					if(config.login.signupUnknown && config.signup.route)
+					{
+						that.sendResponse({message:'The user name <b>' + login + '</b> doesn\'t exist!', redirect:config.signup.route}, undefined, user, undefined, undefined, req, res, next);
+					}
+					else
+					{
+						that.sendResponse({message:'The user name <b>' + login + '</b> doesn\'t exist!'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
+					}
 				}
 				else
 				{
