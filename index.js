@@ -202,13 +202,14 @@ Login.prototype.postLogin = function(req, res, next)
 				}
 				else if (!user)
 				{
+					var	errorMessage = config.login.errorMessage !== undefined ? config.login.errorMessage : 'Invalid login. ';
 					if(config.login.signupUnknown && config.signup.route)
 					{
-						that.sendResponse({message:'The user name <b>' + login + '</b> doesn\'t exist!', redirect:config.signup.route}, undefined, user, undefined, undefined, req, res, next);
+						that.sendResponse({message:errorMessage, redirect:config.signup.route}, undefined, user, undefined, undefined, req, res, next);
 					}
 					else
 					{
-						that.sendResponse({message:'The user name <b>' + login + '</b> doesn\'t exist!'}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
+						that.sendResponse({message:errorMessage}, config.login.views.login, undefined, {login:login,password:password,action:that.loginRoute + suffix,view:that.login}, undefined, req, res, next);
 					}
 				}
 				else
@@ -242,8 +243,7 @@ Login.prototype.postLogin = function(req, res, next)
 									if (hash !== user.derived_key)
 									{
 										// set the default error message
-										var	errorMessage = config.login.errorMessage !== undefined ? config.login.errorMessage : 'Invalid password',
-											warningflag,
+										var	warningflag,
 											redirectflag;
 
 										// increase failed login attempts
@@ -258,14 +258,14 @@ Login.prototype.postLogin = function(req, res, next)
 											var timespan = ms(config.accountLockedTime);
 											user.accountLockedUntil = moment().add(timespan, 'ms').toDate();
 
-											errorMessage = 'Invalid password. Your account is now locked for ' + config.accountLockedTime;
+											errorMessage += 'Your account is now locked for ' + config.accountLockedTime;
 											warningflag = true;
 											redirectflag = '/';
 										}
 										else if (user.failedLoginAttempts >= config.failedLoginsWarning)
 										{
 											// show a warning after 3 (default setting) failed login attempts
-											errorMessage = 'Invalid password. Your account will be locked soon.';
+											errorMessage += 'Your account will be locked soon.';
 											warningflag = true;
 										}
 
