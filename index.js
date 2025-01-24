@@ -171,7 +171,8 @@ Login.prototype.postLogin = function(req, res, next)
 		that = this,
 		login = req.body.name,
 		password = req.body.password,
-		suffix = req.query.redirect ? '?redirect=' + encodeURIComponent(req.query.redirect) : '';
+		suffix = req.query.redirect ? '?redirect=' + encodeURIComponent(req.query.redirect) : '',
+		errorMessage = config.login.errorMessage !== undefined ? config.login.errorMessage : 'Invalid login. ';
 
 	// check for valid inputs
 	if (!login || !password)
@@ -202,7 +203,6 @@ Login.prototype.postLogin = function(req, res, next)
 				}
 				else if (!user)
 				{
-					var	errorMessage = config.login.errorMessage !== undefined ? config.login.errorMessage : 'Invalid login. ';
 					if(config.login.signupUnknown && config.signup.route)
 					{
 						that.sendResponse({message:errorMessage, redirect:config.signup.route}, undefined, user, undefined, undefined, req, res, next);
